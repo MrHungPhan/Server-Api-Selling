@@ -1,8 +1,10 @@
 const Sequelize = require("sequelize");
 const db = require('../database/data');
 
+const OrderDetailt = require('./OrderDetailt');
+const ProductStyle = require('./ProductStyle')
 
-module.exports = db.sequelize.define(
+const ProductColor = db.sequelize.define(
     'product_color',
     {
         id : {
@@ -21,3 +23,13 @@ module.exports = db.sequelize.define(
         timestamps : false
     }
 )
+
+// relation color -order detailt
+ProductColor.hasMany(OrderDetailt, { foreignKey : 'id_color'});
+OrderDetailt.belongsTo(ProductColor, { foreignKey : 'id_color', as : 'color' });
+
+// relation color - product style
+ProductColor.hasMany(ProductStyle, { foreignKey : 'id_product_color'});
+ProductStyle.belongsTo(ProductColor , { foreignKey : 'id_product_color'})
+
+module.exports = ProductColor;

@@ -21,6 +21,7 @@ var menuRoute = require('./routes/menuRoute');
 var cataPageRoute = require('./routes/pages/cataPageRoute')
 var productDetailtPageRoute = require ('./routes/pages/productDetailtPageRoute');
 var userPageActionRoute = require('./routes/pages/userPageActionRoute');
+var cartRoute = require('./routes/pages/cartRoute');
 
 
 app.use('/api/catalog', catalogRoute);
@@ -30,7 +31,8 @@ app.use('/api/menu', menuRoute);
 app.use('/api/home', homeRoute);
 app.use('/api/catapage', cataPageRoute);
 app.use('/api/product', productDetailtPageRoute)
-app.use('/api/user', userPageActionRoute)
+app.use('/api/user', userPageActionRoute);
+app.use('/api/cart', cartRoute);
 
 
 app.listen(port, () => {

@@ -1,8 +1,10 @@
 const Sequelize = require("sequelize");
 const db = require('../database/data');
 
+const OrderDetailt = require('./OrderDetailt');
+const ProductColor = require('./ProductColor');
 
-module.exports = db.sequelize.define(
+const Product = db.sequelize.define(
     'product',
     {
         id : {
@@ -19,9 +21,6 @@ module.exports = db.sequelize.define(
         price : {
             type : Sequelize.INTEGER
         }, 
-        unit : {
-            type : Sequelize.STRING
-        },
         image : {
             type : Sequelize.STRING
         },
@@ -36,3 +35,11 @@ module.exports = db.sequelize.define(
         timestamps : false
     }
 )
+
+// relation
+Product.hasMany(OrderDetailt, { foreignKey : 'id_product'});
+Product.hasMany(ProductColor, { foreignKey : 'id_product'});
+
+OrderDetailt.belongsTo(Product, { foreignKey : 'id_product'});
+ProductColor.belongsTo(Product, {foreignKey : 'id_product'});
+module.exports = Product;

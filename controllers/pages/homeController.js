@@ -49,7 +49,7 @@ module.exports.getProductsHome = async (req, res) => {
     var cloakProducts = await Product.findAll({
         where : {
             id_catalog: {
-                [Op.in] : [23, 24, 20]
+                [Op.in] : [23, 24]
             }
         }
     }, {

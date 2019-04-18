@@ -1,8 +1,9 @@
 const Sequelize = require("sequelize");
 const db = require('../database/data');
 
+const Product = require('./Product');
 
-module.exports = db.sequelize.define(
+const Catalog = db.sequelize.define(
     'catalog',
     {
         id : {
@@ -24,3 +25,10 @@ module.exports = db.sequelize.define(
         timestamps : false
     }
 )
+
+// relation
+Catalog.hasMany(Product, { foreignKey : 'id_catalog'});
+
+Product.belongsTo(Catalog, { foreignKey : 'id_catalog'});
+
+module.exports = Catalog;
