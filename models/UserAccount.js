@@ -15,6 +15,12 @@ const UserAccount = db.sequelize.define(
         },
         password : {
             type : Sequelize.STRING
+        },
+        token : {
+            type : Sequelize.STRING,
+        },
+        active : {
+            type: Sequelize.BOOLEAN
         }
     },
     {
@@ -43,7 +49,8 @@ UserAccount.prototype.isValidPassword = async (email, newPassword) => {
             }
         })
         console.log(user.password, newPassword)
-        return await bcrypt.compare(newPassword, user.password);
+        const resuilt = await bcrypt.compare(newPassword, user.password)
+        return resuilt;
     }catch(error){
         throw new Error(error)
     }

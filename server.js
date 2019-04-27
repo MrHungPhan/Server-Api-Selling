@@ -4,9 +4,15 @@ var express = require('express');
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
+var path = require('path')
 var port = process.env.PORT || 4000;
 
 app.use(cors());
+
+app.set('view engine', 'pug');
+app.set('views','./views');
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended : false}));

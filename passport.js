@@ -5,13 +5,13 @@ const GooglePlusTokenStartegy = require('passport-google-plus-token');
 const FaceBookTokenStartegy = require('passport-facebook-token');
 const { ExtractJwt } = require('passport-jwt');
 const shortid = require('shortid');
+const bcrypt = require('bcryptjs');
 
 const UserAccount = require('./models/UserAccount');
 const UserProfile = require('./models/UserProfile');
 const GoogleAccount = require('./models/GoogleAccount');
 const FaceBookAccount = require('./models/FaceBookAccount');
 const config = require('./config/config');
-hihih
 
 // json web token strategy
 passport.use(new jwtStrategy({
@@ -69,7 +69,9 @@ passport.use('googleToken', new GooglePlusTokenStartegy({
 	const newUserProfile = new UserProfile({
 		id : idUserProfile,
 		display_name : profile.displayName,
-		email : profile.emails[0].value
+		email : profile.emails[0].value,
+		type : 'google',
+		image : profile.photos[0].value
 	})
 	await newUserProfile.save();
 
@@ -160,6 +162,7 @@ passport.use(new localStrategy({
 }, async (email, password, done) => {
 	try{
 		// find user by email
+	console.log(email, password)
 	const user = await UserAccount.findOne({
 			where : {
 				email
@@ -167,12 +170,16 @@ passport.use(new localStrategy({
 		})
 		// if not, handle it
 		if(!user){
-			return done(null, false);
+			return done(null, false, { message : 'Email không tồn tại'});
 		}
 		// check if the passport is correct
-		const isMatch = user.isValidPassword(email, password);
-		if(!isMatch){
-			return done(null, false);
+		const isMatch = await user.isValidPassword(email, password);
+		console.log(isMatch)
+		if(!isMatch ){
+			return done(null, false, { message : 'Mật khẩu không đúng'});
+		}
+		if(!user.active){
+			return done(null, false, { message : 'Tài khoản chưa được kích hoạt'})
 		}
 		// return user
 		done(null, user);
