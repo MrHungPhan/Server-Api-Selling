@@ -20,9 +20,22 @@ const Order = db.sequelize.define(
         total : {
             type : Sequelize.INTEGER
         },
+
         create_time : {
             type: 'TIMESTAMP',
             defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        },
+        customer_name : {
+            type : Sequelize.STRING
+        },
+        customer_phone : {
+            type : Sequelize.STRING
+        },
+        customer_address : {
+            type : Sequelize.STRING
+        },
+        order_code : {
+            type : Sequelize.STRING
         }
     },
     {

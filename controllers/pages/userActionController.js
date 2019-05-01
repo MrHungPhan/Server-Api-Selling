@@ -1,10 +1,14 @@
 const JWT = require('jsonwebtoken');
+var Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const shortid = require('shortid');
 const passport = require('passport');
 const passportConf = require('../../passport');
 
 const UserAccount = require('../../models/UserAccount');
 const UserProfile = require('../../models/UserProfile');
+const Order = require('../../models/Order');
+const OrderDetailt = require('../../models/OrderDetailt')
 const mailer = require('../../misc/mailer')
 
 signToken = (user) => {
@@ -81,19 +85,164 @@ module.exports.postSingIn = async (req, res, next) => {
 	// //response token
 	// res.status(200).json({token})
 	// console.log('login success');
-	passport.authenticate('local', { session: false }, function(err, user, info){
+	passport.authenticate('local', { session: false }, async function(err, user, info){
 		if(err) next(err);
 		if(!user){
 			res.json({message : info.message})
+		}else{
+			// sing in add to Cart from localStorage
+			const { cart } = req.body;
+			if(cart){
+				var orderCheckUser = await Order.findOne({
+					where : {
+						[Op.and] : [{ id_user : user.id_user_profile}, { status : "Created"}]
+					}
+				})
+
+				var orderId = null;
+				if(!orderCheckUser){
+					const orderNew = new Order({
+						id_user : user.id_user_profile,
+						status : "Created"
+					});
+					await orderNew.save();
+
+					orderId = orderNew.id;
+					for(let item of cart){
+						console.log(item)
+						let { product, color, size, quantity } = item;
+						const newOrderDetailt = new OrderDetailt({
+							id_product : product.id,
+							id_color : color.id,
+							id_size : size.id,
+							id_order : orderId,
+							quantity : quantity
+						});
+						await newOrderDetailt.save();
+					}
+					
+
+				}else{
+						// if existed order
+					orderId = orderCheckUser.id;
+
+					for(let item of cart){
+						let { product, color, size, quantity } = item;
+							// check product style existed in order detailt ?
+						const productStyleCheck = await OrderDetailt.findOne({
+							where : {
+								[Op.and]: [
+									{ id_order : orderId },
+									{ id_product : product.id },
+									{ id_color : color.id },
+									{ id_size : size.id }
+								]
+							}
+						});
+						// if existed product in order detailt
+						if(productStyleCheck){
+							await productStyleCheck.update({
+								quantity : productStyleCheck.quantity + quantity
+							})
+						}else{
+							// if not exist then create new order detailt
+							const newOrderDetailt = new OrderDetailt({
+								id_product : product.id,
+								id_color : color.id,
+								id_size : size.id,
+								id_order : orderId,
+								quantity : quantity
+							});
+							await newOrderDetailt.save();
+						}
+					}
+					
+				}
+
+			}
+			
+			const token = signToken(user);
+			res.json({token})
 		}
-		const token = signToken(user);
-		res.json({token})
-	})(req,res, next)
+	})(req,res, next);
+
+	
 }
 
 module.exports.googleOauth = async (req, res, next) => {
+	// sing in add to Cart from localStorage
+	const { cart } = req.body;
+	const user = req.user;
+	if(cart){
+		var orderCheckUser = await Order.findOne({
+			where : {
+				[Op.and] : [{ id_user : user.id_user_profile}, { status : "Created"}]
+			}
+		})
+
+		var orderId = null;
+		if(!orderCheckUser){
+			const orderNew = new Order({
+				id_user : user.id_user_profile,
+				status : "Created"
+			});
+			await orderNew.save();
+
+			orderId = orderNew.id;
+			for(let item of cart){
+				console.log(item)
+				let { product, color, size, quantity } = item;
+				const newOrderDetailt = new OrderDetailt({
+					id_product : product.id,
+					id_color : color.id,
+					id_size : size.id,
+					id_order : orderId,
+					quantity : quantity
+				});
+				await newOrderDetailt.save();
+			}
+			
+
+		}else{
+				// if existed order
+			orderId = orderCheckUser.id;
+
+			for(let item of cart){
+				let { product, color, size, quantity } = item;
+					// check product style existed in order detailt ?
+				const productStyleCheck = await OrderDetailt.findOne({
+					where : {
+						[Op.and]: [
+							{ id_order : orderId },
+							{ id_product : product.id },
+							{ id_color : color.id },
+							{ id_size : size.id }
+						]
+					}
+				});
+				// if existed product in order detailt
+				if(productStyleCheck){
+					await productStyleCheck.update({
+						quantity : productStyleCheck.quantity + quantity
+					})
+				}else{
+					// if not exist then create new order detailt
+					const newOrderDetailt = new OrderDetailt({
+						id_product : product.id,
+						id_color : color.id,
+						id_size : size.id,
+						id_order : orderId,
+						quantity : quantity
+					});
+					await newOrderDetailt.save();
+				}
+			}
+			
+		}
+
+	}
+
 	const token = signToken(req.user);
-	console.log('error')
 	res.status(200).json({token})
 }
 
@@ -132,9 +281,7 @@ module.exports.verifyEmail = async (req, res, next) => {
 			res.render('verifyEmail',{
 				active : user.active
 			})
-		}
-	
-			
+		}		
 	}
 
 }

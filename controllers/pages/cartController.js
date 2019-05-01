@@ -16,30 +16,30 @@ module.exports.addToCart = async (req, res, next) => {
 	// check order with user existed ?
 	var orderCheckUser = await Order.findOne({
 		where : {
-			[Op.and] : [{ id_user : user.id}, { status : "checkin"}]
+			[Op.and] : [{ id_user : user.id}, { status : "Created"}]
 		}
 	})
 
 	// if not existed order with user => create new order
-	var orderId = null;
-	if(!orderCheckUser){
-		const orderNew = new Order({
-		id_user : user.id,
-		status : "checkin"
-		});
-		await orderNew.save();
-		orderId = orderNew.id;
+		var orderId = null;
+		if(!orderCheckUser){
+			const orderNew = new Order({
+			id_user : user.id,
+			status : "Created"
+			});
+			await orderNew.save();
+			orderId = orderNew.id;
 
-		const newOrderDetailt = new OrderDetailt({
-			id_product : product.id,
-			id_color : color.id,
-			id_size : size.id,
-			id_order : orderId,
-			quantity : quantity
-		});
-		await newOrderDetailt.save();
+			const newOrderDetailt = new OrderDetailt({
+				id_product : product.id,
+				id_color : color.id,
+				id_size : size.id,
+				id_order : orderId,
+				quantity : quantity
+			});
+			await newOrderDetailt.save();
 
-	}else{
+		}else{
 		// if existed order
 		orderId = orderCheckUser.id;
 
@@ -100,7 +100,7 @@ module.exports.getCart = async (req, res, next) => {
 	const user = req.user;
 	var orderCheckUser = await Order.findOne({
 		where : {
-			[Op.and] : [{ id_user : user.id}, { status : "checkin"}]
+			[Op.and] : [{ id_user : user.id}, { status : "Created"}]
 		}
 	})
 

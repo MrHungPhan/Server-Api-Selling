@@ -14,8 +14,5 @@ router.post('/add', passportSecret, controller.addToCart);
 
 router.get('/getCart', passportSecret, controller.getCart);
 
-router.get('/hook', (req, res, next) => {
-    res.json(req.query);
-})
 
 module.exports = router;
