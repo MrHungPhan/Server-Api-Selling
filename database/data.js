@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const db = {};
-const sequelize = new Sequelize("sql12292961", "sql12292961", "jQMhTdJ3LD", {
+// ban hang, root, '', localhost.
+const sequelize = new Sequelize("sql12292961" , "sql12292961", "jQMhTdJ3LD", {
     host : 'sql12.freemysqlhosting.net',
     dialect : 'mysql',
 
