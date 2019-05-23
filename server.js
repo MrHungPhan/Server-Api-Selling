@@ -58,6 +58,10 @@ const orderRoute = require('./routes/pages/orderRoute')
 const searchRoute = require('./routes/pages/searchRoute')
 
 
+app.get('/', (req, res) => {
+	res.send('hello')
+})
+
 app.use('/api/admin/catalog', catalogRoute);
 app.use('/api/admin/products', productRoute);
 app.use('/api/admin/post', postRoute);
