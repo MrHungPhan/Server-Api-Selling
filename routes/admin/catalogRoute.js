@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const cors = require('cors');
 
-const Catalog = require('../models/Catalog');
-const controller = require('../controllers/catalogController')
+const controller = require('../../controllers/admin/catalogController')
 
 router.use(cors());
 

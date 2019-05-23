@@ -20,7 +20,6 @@ const Order = db.sequelize.define(
         total : {
             type : Sequelize.INTEGER
         },
-
         create_time : {
             type: 'TIMESTAMP',
             defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')

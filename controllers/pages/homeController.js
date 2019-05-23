@@ -15,25 +15,35 @@ function getIdCata (arrCata){
 module.exports.getProductsHome = async (req, res) => {
     var shirtCata = await Catalog.findAll({
        where : {
-           [Op.or] : [{id_parent : 1}, {id : 2}]
+           id_parent : 1
        }
     })
 
     var trousersCata = await Catalog.findAll({
         where : {
-            id_parent : 3
+            id_parent: 3
         }
     })
 
+     var accessCata = await Catalog.findAll({
+        where : {
+            id_parent: 5
+        }
+    })
+
+     var shoseCata = await Catalog.findAll({
+        where : {
+            id_parent: 31
+        }
+    })
 
     var shirtProducts = await Product.findAll({
         where : {
             id_catalog : {
                 [Op.in] : getIdCata(shirtCata)
             }
-        }
-    }, {
-        limit: 32
+        },
+        limit : 16
     })
 
     var trousersProducts = await Product.findAll({
@@ -41,44 +51,32 @@ module.exports.getProductsHome = async (req, res) => {
             id_catalog : {
                 [Op.in] : getIdCata(trousersCata)
             }
-        }
-    }, {
-        limit: 32
+        },
+        limit : 16
     })
 
-    var cloakProducts = await Product.findAll({
+    var accesssProducts = await Product.findAll({
         where : {
-            id_catalog: {
-                [Op.in] : [23, 24]
+           id_catalog : {
+                [Op.in] : getIdCata(accessCata)
             }
-        }
-    }, {
-        limit: 32
-    })
-
-    var winnerProducts = await Product.findAll({
-        where : {
-            id_catalog: {
-                [Op.in] : [25, 21]
-            }
-        }
-    }, {
-        limit: 32
+        },
+        limit : 16
     })
 
     var shoeseProducts = await Product.findAll({
         where : {
-            id_catalog: 4
-        }
-    }, {
-        limit: 32
+            id_catalog : {
+                [Op.in] : getIdCata(shoseCata)
+            }
+        },
+        limit : 16
     })
 
     res.json({
         shirt : shirtProducts,
         trousers : trousersProducts,
-        cloak : cloakProducts,
-        winner : winnerProducts,
+        accessories : accesssProducts,
         shose : shoeseProducts
     })
 }

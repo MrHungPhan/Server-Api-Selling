@@ -12,6 +12,10 @@ router.use(cors());
 
 router.post('/add', passportSecret, controller.addToCart);
 
+router.post('/deleteItem', passportSecret, controller.deleteCartItem);
+
+router.post('/updateItem', passportSecret, controller.updateCartItem)
+
 router.get('/getCart', passportSecret, controller.getCart);
 
 

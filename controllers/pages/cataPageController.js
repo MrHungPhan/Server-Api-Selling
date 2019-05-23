@@ -14,53 +14,148 @@ function findIdCataParent(catalog, nameCata) {
 	return idCata;
 }
 
-module.exports.getProductsWithCatalog =  async (req, res, next) => {
-	var nameCata = req.params.name;
-	var catalog = await Catalog.findAll();
-	var idCataPrent = findIdCataParent(catalog, nameCata);
-
-	var idCataChild =  await Catalog.findAll({
-		attributes: ['id'],
-		where : {
-			id_parent : idCataPrent
-		}
-	})
-	var idCata = [];
-	if(idCataChild.length > 0){
-		for(item of idCataChild){
-			idCata.push(item.id)
-		}
-
-	}else {
-		idCata.push(idCataPrent)
-	}
-	var resuilt = await Product.findAll({
-		where : {
-			id_catalog : idCata
-		}
-	})
-
-	var slider = await Slider.findAll({
-		where : {
-			id_catalog : idCataPrent
-		}
-	})
-
-	var catalogPath = await Catalog.findOne({
-		where : {
-			id : idCataPrent
-		}
-	})
-
-	res.json({
-		path : catalogPath.name,
-		slider : slider,
-		products : resuilt
+function sortNameFuntion(resuilt, sortValue){
+	resuilt.sort((proPrev, proNext) => {
+		if(proPrev.name > proNext.name) return -parseInt(sortValue)
+		else if(proPrev.name < proNext.name) return parseInt(sortValue)
+		else return 0;
 	})
 }
 
-module.exports.getProductsWithChildName = async (req, res, next) => {
+function sortPriceFuntion(resuilt, sortValue){
+	resuilt.sort((proPrev, proNext) => {
+		if(proPrev.price > proNext.price) return parseInt(sortValue)
+		else if(proPrev.price < proNext.price) return -parseInt(sortValue)
+		else return 0;
+	})
+}
 
+module.exports.getProductsWithCatalog =  async (req, res, next) => {
+	console.log("FILTER------------------------------------------------")
+	console.log(req.query, req.params)
+	var nameCata = req.params.name;
+	var catalog = await Catalog.findAll();
+	var idCataPrent = findIdCataParent(catalog, nameCata);
+	if(idCataPrent.length !== 0){
+		var idCataChild =  await Catalog.findAll({
+				attributes: ['id'],
+				where : {
+					id_parent : idCataPrent
+				}
+			})
+			var idCata = [];
+			if(idCataChild.length > 0){
+				for(item of idCataChild){
+					idCata.push(item.id)
+				}
+
+			}else {
+				idCata.push(idCataPrent)
+			}
+			
+			var slider = await Slider.findAll({
+				where : {
+					id_catalog : idCataPrent
+				}
+			})
+
+			var catalogPath = await Catalog.findOne({
+				where : {
+					id : idCataPrent
+				}
+			})
+
+			var resuilt = await Product.findAll({
+					where : {
+						id_catalog : idCata
+				}
+			})
+
+			// if not filter
+			const lengthQuery = _.keys(req.query);
+			const { sortBy, sortValue, filterPrice } = req.query
+			switch(lengthQuery.length){
+				case 1: {
+					if(filterPrice){
+						const filter = filterPrice.split('>');
+							if(filter.length === 1){
+								if(_.isNaN(parseInt(filter[0]))) break;
+								else{
+									resuilt = resuilt.filter(product => {
+										return product.price > parseInt(filter[0])
+									})
+								}
+							}else{
+								resuilt = resuilt.filter(product => {
+									return product.price > parseInt(filter[0]) && product.price <= parseInt(filter[1])
+								})
+							}
+					}
+					break;
+				}
+				case 2 : {
+					if(sortBy && sortValue){
+						if(sortBy === 'name'){
+							sortNameFuntion(resuilt, sortValue);
+						}else{
+							sortPriceFuntion(resuilt, sortValue)
+						}
+					}
+					break;
+				}
+				case 3 : {
+					if(sortBy, sortValue, filterPrice){
+						if(sortBy === 'name'){
+							sortNameFuntion(resuilt, sortValue);
+
+							const filter = filterPrice.split('>');
+							if(filter.length === 1){
+								if(_.isNaN(parseInt(filter[0]))) break;
+								else{
+									resuilt = resuilt.filter(product => {
+										return product.price > parseInt(filter[0])
+									})
+								}
+							}else{
+								resuilt = resuilt.filter(product => {
+									return product.price > parseInt(filter[0]) && product.price <= parseInt(filter[1])
+								})
+							}
+						}else{
+							sortPriceFuntion(resuilt, sortValue)
+
+							const filter = filterPrice.split('>');
+							if(filter.length === 1){
+								if(_.isNaN(parseInt(filter[0]))) break;
+								else{
+									resuilt = resuilt.filter(product => {
+										return product.price > parseInt(filter[0])
+									})
+								}
+							}else{
+								resuilt = resuilt.filter(product => {
+									return product.price > parseInt(filter[0]) && product.price <= parseInt(filter[1])
+								})
+							}
+						}
+					}
+					break;
+				}
+				default : 
+					break;
+			}
+			res.status(200).json({
+				path : catalogPath.name,
+				slider : slider,
+				products : resuilt
+			})
+	}
+	
+}
+
+module.exports.getProductsWithChildName = async (req, res, next) => {
+	console.log('filter -----------------------------------------')
+	console.log(req.query, req.params)
 	var childName = req.params.childName;
 	var catalog = await Catalog.findAll();
 	var idCataChild = findIdCataParent(catalog, childName);
@@ -79,14 +174,95 @@ module.exports.getProductsWithChildName = async (req, res, next) => {
 
 	var parent_id = childCatalog.id_parent
 
+	const parentCatalog = await Catalog.findOne({
+		where : {
+			id : parent_id
+		}
+	})
+
 	var slider = await Slider.findAll({
 		where : {
 			id_catalog : parent_id
 		}
 	})  
 
+
+	// if not filter
+	const lengthQuery = _.keys(req.query);
+	const { sortBy, sortValue, filterPrice } = req.query
+	switch(lengthQuery.length){
+		case 1: {
+			if(filterPrice){
+				const filter = filterPrice.split('>');
+					if(filter.length === 1){
+						if(_.isNaN(parseInt(filter[0]))) break;
+						else{
+							resuilt = resuilt.filter(product => {
+								return product.price > parseInt(filter[0])
+							})
+						}
+					}else{
+						resuilt = resuilt.filter(product => {
+							return product.price > parseInt(filter[0]) && product.price <= parseInt(filter[1])
+						})
+					}
+			}
+			break;
+		}
+		case 2 : {
+			if(sortBy && sortValue){
+				if(sortBy === 'name'){
+					sortNameFuntion(resuilt, sortValue);
+				}else{
+					sortPriceFuntion(resuilt, sortValue)
+				}
+			}
+			break;
+		}
+		case 3 : {
+			if(sortBy, sortValue, filterPrice){
+				if(sortBy === 'name'){
+					sortNameFuntion(resuilt, sortValue);
+
+					const filter = filterPrice.split('>');
+					if(filter.length === 1){
+						if(_.isNaN(parseInt(filter[0]))) break;
+						else{
+							resuilt = resuilt.filter(product => {
+								return product.price > parseInt(filter[0])
+							})
+						}
+					}else{
+						resuilt = resuilt.filter(product => {
+							return product.price > parseInt(filter[0]) && product.price <= parseInt(filter[1])
+						})
+					}
+				}else{
+					sortPriceFuntion(resuilt, sortValue)
+
+					const filter = filterPrice.split('>');
+					if(filter.length === 1){
+						if(_.isNaN(parseInt(filter[0]))) break;
+						else{
+							resuilt = resuilt.filter(product => {
+								return product.price > parseInt(filter[0])
+							})
+						}
+					}else{
+						resuilt = resuilt.filter(product => {
+							return product.price > parseInt(filter[0]) && product.price <= parseInt(filter[1])
+						})
+					}
+				}
+			}
+			break;
+		}
+		default : 
+			break;
+	}
+
 	res.json({
-		path : childCatalog.name,
+		path : `${parentCatalog.name} / ${childCatalog.name}`,
 		slider : slider,
 		products  : resuilt
 	})

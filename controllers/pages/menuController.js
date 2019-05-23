@@ -1,4 +1,4 @@
-const Catalog = require('../models/Catalog');
+const Catalog = require('../../models/Catalog');
 
 module.exports.getMenu = async (req, res) => {
     var menuParent = await Catalog.findAll({

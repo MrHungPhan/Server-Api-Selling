@@ -1,4 +1,4 @@
-const Catalog = require('../models/Catalog');
+var Catalog = require('../../models/Catalog');
 
 module.exports.getCatalog = (req, res) => {
     Catalog.findAll()

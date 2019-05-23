@@ -3,6 +3,7 @@ const db = require('../database/data');
 
 const OrderDetailt = require('./OrderDetailt');
 const ProductColor = require('./ProductColor');
+const ProductImage = require('./ProductImage')
 
 const Product = db.sequelize.define(
     'product',
@@ -20,7 +21,10 @@ const Product = db.sequelize.define(
         },
         price : {
             type : Sequelize.INTEGER
-        }, 
+        },
+        quantity : {
+            type : Sequelize.INTEGER
+        },
         image : {
             type : Sequelize.STRING
         },
@@ -29,6 +33,10 @@ const Product = db.sequelize.define(
         },
         description : {
             type : Sequelize.STRING
+        },
+         create_time : {
+            type: 'TIMESTAMP',
+            defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
         }
     },
     {
@@ -39,7 +47,9 @@ const Product = db.sequelize.define(
 // relation
 Product.hasMany(OrderDetailt, { foreignKey : 'id_product'});
 Product.hasMany(ProductColor, { foreignKey : 'id_product'});
+Product.hasMany(ProductImage, { foreignKey : 'id_product'});
 
 OrderDetailt.belongsTo(Product, { foreignKey : 'id_product'});
 ProductColor.belongsTo(Product, {foreignKey : 'id_product'});
+ProductImage.belongsTo(Product, {foreignKey : 'id_product'});
 module.exports = Product;

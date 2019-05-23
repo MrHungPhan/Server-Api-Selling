@@ -20,4 +20,6 @@ router.post('/checkoutOrder',passportSecret, controller.checkoutOrder);
 
 router.get('/verify', controller.verifyOrder)
 
+router.get('/getOrderHistory', passportSecret, controller.getOrderHistory)
+
 module.exports = router;

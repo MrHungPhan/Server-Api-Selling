@@ -7,6 +7,7 @@ var Product = require('../../models/Product');
 var ProductColor = require('../../models/ProductColor');
 var ProductSize = require('../../models/ProductSize');
 var ProductStyle = require('../../models/ProductStyle');
+var ProductImage = require('../../models/ProductImage');
 
 function findIdCataParent(catalog, nameCata) {
 	var idCata = []
@@ -58,5 +59,11 @@ module.exports.getProductDetailt =  async (req, res, next) => {
 		sizeWithColor.push(size)
 	}
 
-	res.json([product, colorProduct, sizeWithColor]);
+	const imageProduct = await ProductImage.findAll({
+		where : {
+			id_product : id
+		}
+	})
+
+	res.json([product, colorProduct, sizeWithColor, imageProduct]);
 }

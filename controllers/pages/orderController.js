@@ -1,10 +1,15 @@
 var apiTransport = require('../../utils/apiTransport');
 var _ = require('lodash');
+var Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 var Order = require('../../models/Order');
 var OrderDetailt = require('../../models/OrderDetailt');
 var Product = require('../../models/Product');
 const UserProfile = require('../../models/UserProfile');
+const ProductColor = require('../../models/ProductColor');
+const ProductSize = require('../../models/ProductSize');
+const ProductStyle = require('../../models/ProductStyle');
 const mailer = require('../../misc/mailer')
 
 const sortLike = (dataNotLike, data) => {
@@ -142,6 +147,7 @@ module.exports.checkoutOrder = async (req, res, next) =>{
 
         //send email
         await mailer.sendEmail('menshop789@gmail.com', req.user.email, 'Xác nhận đơn hàng', html) 
+        res.status(200).json(orderUser)
     }
    
 }
@@ -216,15 +222,16 @@ module.exports.verifyOrder = async (req, res) => {
                 await orderVerify.update({
                     status : "Verified",
                     order_code : resApi.data.data.OrderCode,
-                    create_time : currentDate
+                    create_time : currentDate,
+                    total : total
                 })
 
-                 res.render('verifyOrderSuccess',{
-                      orderCode : resApi.data.data.OrderCode
-                })
-            }
-
-           
+            res.render('verifyOrderSuccess',{
+                orderCode : resApi.data.data.OrderCode
+            })
+        }else{
+                res.send(res.data.msg)
+            }       
         }else{
             await orderVerify.update({
                 status : 'Cancel',
@@ -235,4 +242,48 @@ module.exports.verifyOrder = async (req, res) => {
     }else{
         res.render('verifyNotFound')
     }
+}
+
+module.exports.getOrderHistory = async (req, res) => {
+    const user = req.user;
+    console.log(user)
+    try{
+            const orders = await Order.findAll({
+                include : [
+                    {
+                        model : OrderDetailt
+                    }
+                ],
+                where : { status : {
+                    [Op.ne] : 'Created'
+                },
+                id_user : user.id
+            }
+        })
+
+        ////////////// JSON.parese de mute Model ///////////////////////
+        var resuilt = JSON.parse(JSON.stringify(orders))
+        for(let item of resuilt){
+            var detailts = item.order_detailts;
+            for(let i = 0; i< detailts.length; i++){
+                const product = await Product.findOne({
+                    where : { id : detailts[i].id_product }
+                })
+                const color = await ProductColor.findOne({ where : { id : detailts[i].id_color }});
+                const size = await ProductSize.findOne({ where : {id : detailts[i].id_size }});
+                detailts.splice(i, 1, {
+                    product, 
+                    size,
+                    color,
+                    quantity : detailts[i].quantity
+                })
+            }
+           
+        }
+
+        res.status(200).json(resuilt)
+    }catch(err){
+        console.log(err)
+    }
+  
 }
