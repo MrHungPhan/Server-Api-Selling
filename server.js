@@ -56,6 +56,7 @@ const userPageActionRoute = require('./routes/pages/userPageActionRoute');
 const cartRoute = require('./routes/pages/cartRoute');
 const orderRoute = require('./routes/pages/orderRoute')
 const searchRoute = require('./routes/pages/searchRoute')
+const postPageRoute = require('./routes/pages/postRoute')
 
 
 app.get('/', (req, res) => {
@@ -74,6 +75,7 @@ app.use('/api/user', userPageActionRoute);
 app.use('/api/cart', cartRoute);
 app.use('/api/order', orderRoute)
 app.use('/api/search', searchRoute)
+app.use('/api/post', postPageRoute)
 
 
 server.listen(port, () => {

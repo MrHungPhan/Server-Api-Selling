@@ -36,6 +36,8 @@ module.exports.getProductsWithCatalog =  async (req, res, next) => {
 	var nameCata = req.params.name;
 	var catalog = await Catalog.findAll();
 	var idCataPrent = findIdCataParent(catalog, nameCata);
+	// let offset = 0;
+	// offset= 5 * (req.query.page - 1);
 	if(idCataPrent.length !== 0){
 		var idCataChild =  await Catalog.findAll({
 				attributes: ['id'],
@@ -65,17 +67,28 @@ module.exports.getProductsWithCatalog =  async (req, res, next) => {
 				}
 			})
 
+
+			// count number page
+			var productCount = await Product.findAll({
+				where : {
+					id_catalog : idCata
+				}
+			});
+			let pageTotal = Math.ceil(productCount.length / 5)
+			console.log(productCount.length)
+
 			var resuilt = await Product.findAll({
 					where : {
 						id_catalog : idCata
-				}
+				},
+				limit: 5 * req.query.page,
 			})
 
 			// if not filter
 			const lengthQuery = _.keys(req.query);
-			const { sortBy, sortValue, filterPrice } = req.query
+			const { sortBy, sortValue, filterPrice, page } = req.query
 			switch(lengthQuery.length){
-				case 1: {
+				case 2: {
 					if(filterPrice){
 						const filter = filterPrice.split('>');
 							if(filter.length === 1){
@@ -93,7 +106,7 @@ module.exports.getProductsWithCatalog =  async (req, res, next) => {
 					}
 					break;
 				}
-				case 2 : {
+				case 3 : {
 					if(sortBy && sortValue){
 						if(sortBy === 'name'){
 							sortNameFuntion(resuilt, sortValue);
@@ -103,7 +116,7 @@ module.exports.getProductsWithCatalog =  async (req, res, next) => {
 					}
 					break;
 				}
-				case 3 : {
+				case 4 : {
 					if(sortBy, sortValue, filterPrice){
 						if(sortBy === 'name'){
 							sortNameFuntion(resuilt, sortValue);
@@ -147,7 +160,8 @@ module.exports.getProductsWithCatalog =  async (req, res, next) => {
 			res.status(200).json({
 				path : catalogPath.name,
 				slider : slider,
-				products : resuilt
+				products : resuilt,
+				pageTotal
 			})
 	}
 	
@@ -166,10 +180,20 @@ module.exports.getProductsWithChildName = async (req, res, next) => {
 		}
 	})
 
-	var resuilt = await Product.findAll({
+	// count number page
+	var productCount = await Product.findAll({
 		where : {
 			id_catalog : idCataChild
 		}
+	});
+	let pageTotal = Math.ceil(productCount.length / 5)
+	console.log(pageTotal)
+
+	var resuilt = await Product.findAll({
+		where : {
+			id_catalog : idCataChild
+		},
+		limit : 5 * req.query.page
 	})
 
 	var parent_id = childCatalog.id_parent
@@ -191,7 +215,7 @@ module.exports.getProductsWithChildName = async (req, res, next) => {
 	const lengthQuery = _.keys(req.query);
 	const { sortBy, sortValue, filterPrice } = req.query
 	switch(lengthQuery.length){
-		case 1: {
+		case 2: {
 			if(filterPrice){
 				const filter = filterPrice.split('>');
 					if(filter.length === 1){
@@ -209,7 +233,7 @@ module.exports.getProductsWithChildName = async (req, res, next) => {
 			}
 			break;
 		}
-		case 2 : {
+		case 3 : {
 			if(sortBy && sortValue){
 				if(sortBy === 'name'){
 					sortNameFuntion(resuilt, sortValue);
@@ -219,7 +243,7 @@ module.exports.getProductsWithChildName = async (req, res, next) => {
 			}
 			break;
 		}
-		case 3 : {
+		case 4: {
 			if(sortBy, sortValue, filterPrice){
 				if(sortBy === 'name'){
 					sortNameFuntion(resuilt, sortValue);
@@ -264,6 +288,7 @@ module.exports.getProductsWithChildName = async (req, res, next) => {
 	res.json({
 		path : `${parentCatalog.name} / ${childCatalog.name}`,
 		slider : slider,
-		products  : resuilt
+		products  : resuilt,
+		pageTotal
 	})
 }
