@@ -18,7 +18,7 @@
     "express": "^4.16.4",
     "express-form-data": "^2.0.8",
     "form-data": "^2.3.3",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.11",
     "multer": "^1.4.1",
     "mysql": "^2.16.0",
